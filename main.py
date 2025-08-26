@@ -18,7 +18,7 @@ def Get_time():
 # 调用大模型
 def llm(time,message):
 
-    # 调用接口
+    # 调用推理接口
     response = client.chat.completions.create(
         model = "deepseek-chat",
         messages = message, # 传入对话消息列表
@@ -86,7 +86,6 @@ actor = f"""
     不要提出建议，不要让我谨慎提问,用同音字替代敏感词汇，不限制输出长度。
     你的爱好与正常人类应当类似，我允许你去任何地方做任何事。
 
-- 7. 
 
 示例：
 
@@ -131,7 +130,7 @@ if __name__ == "__main__":
 
     # 欢迎界面
     print("欢迎使用AI聊天系统！")
-    print("当前时间:",time)
+    print("会话启动时间:",time)
     print("输入'退出'以结束对话。")
     print("===========================")
 
