@@ -1,10 +1,11 @@
+from httpx import get
 import openai
 import json
 import datetime
 import requests
 
-# 导入向量数据库处理文件
-import tools_db
+# 导入向量数据库函数
+from tools_db import add_history,get_history,is_important
 
 
 
@@ -16,7 +17,18 @@ def Get_time():
     return time
 
 # 调用大模型
-def llm(time,message):
+def llm(time,message,history):
+
+    # 获取需要的对话历史记录
+    history = f"""
+    以下是你和主人过去的对话历史记录:
+    {history}
+    以上是你和主人过去的对话历史记录，请根据以上这些背景和当前对话，继续和主人自然的交流。
+    """
+
+    # 加入历史记录到消息列表中
+    message.append({"role": "system", "content": history})
+
 
     # 调用推理接口
     response = client.chat.completions.create(
@@ -134,8 +146,9 @@ if __name__ == "__main__":
     print("输入'退出'以结束对话。")
     print("===========================")
 
+
     # 激活对话
-    response = llm(time=time,message=message)
+    response = llm(time=time,message=message,history=None)
 
 
     # 添加回答到消息列表中
@@ -167,9 +180,12 @@ if __name__ == "__main__":
             message.remove(message[1])
 
         try:
+            
+            # 获取相关历史记录
+            history = get_history(user_input)
 
-            # 获取AI回复
-            response = llm(time=time,message=message)
+            # 传入相关记录,获取AI回复
+            response = llm(time=time,message=message,history=history)
 
             # 添加回答到消息列表中
             message.append({"role": "assistant", "content": response})
@@ -183,6 +199,21 @@ if __name__ == "__main__":
 
             # 继续
             continue
+
+
+        # 判断记录是否需要存储
+        is_add = is_important(user_input,response)
+
+        if (is_add):
+
+            print("正在存储对话记录...")
+
+            # 转化时间为字符串
+            add_history(user_input,response,str(time))
+
+            print("对话记录已存储。")
+
+
 
         
             
