@@ -74,6 +74,7 @@ def get_history(query,n_results = 5):
         # 返回搜索结果的文本内容
         response = results['documents'][0]
         print("找到相关的历史记录:",len(response))
+        return response
         
 
 
