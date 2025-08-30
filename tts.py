@@ -1,35 +1,73 @@
+from email.mime import base
 import os
+from sqlite3 import connect
+from turtle import update
 
 
-# µ¼Èë°¢ÀïÄ£ĞÍ¿â
+# å¯¼å…¥é˜¿é‡Œæ¨¡å‹åº“
 import dashscope
-# Ê¹ÓÃv2°æ±¾µÄtts    
-from dashscope.audio.tts_v2 import VoiceEnrollmentService
 
-# ´´½¨ÓïÒô×¢²á·şÎñÊµÀı
+# ä½¿ç”¨v2ç‰ˆæœ¬çš„tts    
+from dashscope.audio.tts_v2 import VoiceEnrollmentService, SpeechSynthesizer
+
+# ç”¨äºè§£ç TTSæœåŠ¡è¿”å›çš„base64ç¼–ç çš„éŸ³é¢‘æ•°æ®
+import base64
+
+# æä¾›çº¿ç¨‹åŒæ­¥æœºåˆ¶ï¼Œç¡®ä¿ä¸»çº¿ç¨‹ç­‰å¾…åˆæˆå®Œæˆ
+import threading
+
+import time
+
+# TTSå®æ—¶åˆæˆç›¸å…³çš„æ ¸å¿ƒç±»
+from dashscope.audio.qwen_tts_realtime import QwenTtsRealtime, QwenTtsRealtimeCallback, AudioFormat
+
+
+
+
+# åˆ›å»ºè¯­éŸ³æ³¨å†ŒæœåŠ¡å®ä¾‹
 service = VoiceEnrollmentService()
 
-# µ÷ÓÃcreate_voice·½·¨¸´¿ÌÉùÒô£¬²¢Éú³Évoice_id
+# è°ƒç”¨create_voiceæ–¹æ³•å¤åˆ»å£°éŸ³ï¼Œå¹¶ç”Ÿæˆvoice_id
 
+dashscope.api_key = "sk-83ea3498d37a491da1959c34fbd647fd"
+
+
+# å¤åˆ»å£°éŸ³ï¼Œè¿”å›voice_id   
 def create_voice(file_url,voice_name):
     
 
-    # ¿ªÊ¼´´½¨ÒôÉ«
+    # å¼€å§‹åˆ›å»ºéŸ³è‰²
     new_id = service.create_voice(
 
-        # Ê¹ÓÃv2Ä£ĞÍ
+        # ä½¿ç”¨v2æ¨¡å‹
         target_model = "cosyvoice-v2",
 
-        # ÒôÉ«Ãû³Æ
+        # éŸ³è‰²åç§°
         prefix = voice_name,
 
-        # ÒôÉ«ÎÄ¼şurl
+        # éŸ³è‰²æ–‡ä»¶url
         url = file_url
         
     )
 
     return new_id
 
+# vioce_id_1 = cosyvoice-v2-v1-d9643e6da37e4ad195a6519fde12e066
 
-create_voice()
+
+# è¿›è¡ŒTTSåˆæˆ
+def tts(text):
+    client = SpeechSynthesizer(
+        model ="cosyvoice-v2",  # ä½¿ç”¨v2æ¨¡å‹
+        voice = "cosyvoice-v2-v1-d9643e6da37e4ad195a6519fde12e066",  # ä½¿ç”¨å¤åˆ»çš„éŸ³è‰²ID
+    )
+
+    response = client.call("hello")
+
+    with open("output.wav", "wb") as f:
+        f.write(response)
+
+
+tts("ä¸»äººï¼Œä½ å›æ¥äº†ï¼")
+
     
