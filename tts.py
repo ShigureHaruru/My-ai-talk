@@ -68,6 +68,8 @@ def tts(text):
         f.write(response)
 
 
-tts("主人，你回来了！")
+
+
+print(create_voice(file_url="https://raw.githubusercontent.com/ShigureHaruru/My-ai-talk/refs/heads/main/voice.mp3?token=GHSAT0AAAAAADIXJJS564U5I56KWCZF5O2S2FTITYA",voice_name="v"))
 
     
