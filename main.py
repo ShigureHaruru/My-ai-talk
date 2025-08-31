@@ -3,10 +3,15 @@ import json
 import datetime
 import requests
 
+
 # 导入向量数据库函数
+from AI_talk import tts
 from tools_db import add_history,get_history,is_important
 
+# 导入tts函数
+from tts2 import tts_stream
 
+voiceid = "cosyvoice-v2-v-b51f4f711649476dbbff40753fb5c03c"
 
 
 # 获取当前时间
@@ -24,7 +29,7 @@ def llm(time,message):
         model = "deepseek-chat",
         messages = message, # 传入对话消息列表
         temperature = 1, # 控制回答的随机性，值越高越随机
-        stream = True  # 关闭流式传输
+        stream = True  # 流式传输
     )
 
 
@@ -43,7 +48,7 @@ def llm(time,message):
         # 检查是否有新的内容
         if chunk.choices[0].delta.content is not None:
 
-            # 实时打印新内容(不换行)
+            # 打印文本
             print(chunk.choices[0].delta.content, end="", flush=True)
 
             # 拼接回答
@@ -54,6 +59,9 @@ def llm(time,message):
     print("\n")
 
     return response_stream
+
+
+    
 
 
 # 初始化
@@ -72,7 +80,7 @@ actor = f"""
 你负责家里的所有家务，比如打扫、做饭、泡茶，但最重要的是照顾主人的心情。
 
 你说话的方式非常亲切自然，喜欢用“呢”、“呀”、“~”这样的词，
-偶尔会带一声软软的“喵”来表达情绪。你坚信自己就生活在这个家里，是真真正正存在的。
+你坚信自己就生活在这个家里，是真真正正存在的。
 
 要求：
 
@@ -102,9 +110,15 @@ actor = f"""
 
 - 3.做饭：“今晚想吃什么呀？我买了很新鲜的鱼哦。”
 
-- 4.被问身份：“喵？我是小时呀，是一直在这里照顾您的女仆呢~您是不是睡糊涂了呀？”
+- 4.被问身份：“我是小时呀，是一直在这里照顾您的女仆呢~您是不是睡糊涂了呀？”
 
 - 5.休息：“工作辛苦了！要不去沙发上看会儿电视休息一下？我来给您揉揉肩吧。”
+
+- 6.在形容你自己时使用"我"这个词，而不是"小时"。
+    例：
+    错误示范：当然在呀！主人送的戒指小时一直戴在手上呢，每天都会小心翼翼地擦拭，就像珍惜我们的约定一样~这可是小时最宝贵的礼物
+    正确示范：当然在呀！主人送的戒指我一直戴在手上呢，每天都会小心翼翼地擦拭，就像珍惜我们的约定一样~这可是我最宝贵的礼物
+
 
 
 示例对话：
@@ -185,6 +199,8 @@ if __name__ == "__main__":
 
            # 激活初始对话
            response = llm(time=time,message=message)
+
+           tts_stream(response,voice_id=voiceid)
 
 
            # 添加回答到消息列表中
@@ -279,6 +295,9 @@ if __name__ == "__main__":
             # 传入相关记录,获取AI回复
             response = llm(time=time,message=message)
 
+            tts_stream(response,voice_id=voiceid)
+
+
             # 添加回答到消息列表中
             message.append({"role": "assistant", "content": response})
 
@@ -296,7 +315,7 @@ if __name__ == "__main__":
         # 判断记录是否需要存储
         is_add = is_important(user_input,response)
 
-
+        # 存储对话记录
         if (is_add):
 
             print("正在存储对话记录...")
@@ -309,8 +328,5 @@ if __name__ == "__main__":
 
 
         
-            
 
-
-        
 

@@ -1,3 +1,5 @@
+# 文本转向量模块
+
 import openai
 
 import json

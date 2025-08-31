@@ -1,25 +1,16 @@
-from email.mime import base
-import os
-from sqlite3 import connect
-from turtle import update
-
+# tts(非流式合成版)
 
 # 导入阿里模型库
+from os import system
 import dashscope
 
 # 使用v2版本的tts    
 from dashscope.audio.tts_v2 import VoiceEnrollmentService, SpeechSynthesizer
 
-# 用于解码TTS服务返回的base64编码的音频数据
-import base64
-
-# 提供线程同步机制，确保主线程等待合成完成
-import threading
-
 import time
 
-# TTS实时合成相关的核心类
-from dashscope.audio.qwen_tts_realtime import QwenTtsRealtime, QwenTtsRealtimeCallback, AudioFormat
+from playsound import playsound
+
 
 
 
@@ -52,24 +43,30 @@ def create_voice(file_url,voice_name):
 
     return new_id
 
-# vioce_id_1 = cosyvoice-v2-v1-d9643e6da37e4ad195a6519fde12e066
+# vioce_id_1 = cosyvoice-v2-v-b51f4f711649476dbbff40753fb5c03c
 
 
 # 进行TTS合成
 def tts(text):
     client = SpeechSynthesizer(
         model ="cosyvoice-v2",  # 使用v2模型
-        voice = "cosyvoice-v2-v1-d9643e6da37e4ad195a6519fde12e066",  # 使用复刻的音色ID
+        voice = "cosyvoice-v2-v-b51f4f711649476dbbff40753fb5c03c",  # 使用复刻的音色ID
+        speech_rate = 1.1 # 语速调整，1.0为正常语速
     )
 
-    response = client.call("hello")
+    response = client.call(text=text)
 
-    with open("output.wav", "wb") as f:
+    with open("output.mp3", "wb") as f:
         f.write(response)
+        
+    playsound("output.mp3")
 
 
 
 
-print(create_voice(file_url="https://raw.githubusercontent.com/ShigureHaruru/My-ai-talk/refs/heads/main/voice.mp3?token=GHSAT0AAAAAADIXJJS564U5I56KWCZF5O2S2FTITYA",voice_name="v"))
+
+
+
+
 
     
