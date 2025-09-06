@@ -1,3 +1,5 @@
+import re
+from types import NoneType
 import openai
 import json
 import datetime
@@ -11,7 +13,74 @@ from tools_db import add_history,get_history,is_important
 # 导入tts函数
 from tts2 import tts_stream
 
+# 导入类型提示
+from typing import List, Dict, Callable, Any
+
+
+
+# 选择tts的voiceid
 voiceid = "cosyvoice-v2-v-b51f4f711649476dbbff40753fb5c03c"
+
+
+# 创建装饰器
+def tool(func:Callable) -> Callable:
+
+    # 定义了一个名为 tool 的函数，它接受一个可调用对象（函数）作为参数，并返回一个可调用对象。
+
+    # 添加istool属性，表示这是一个可用的工具函数
+    func.is_tool = True
+    
+    return func
+
+
+
+"""以下为ai的工具函数"""
+
+@tool
+def AI_get_weather(city1 : str, city2 : str) -> str:
+    """获取指定城市的天气信息。参数： city1：省份名，city2：城市名"""
+
+    response = requests.get(url=f"https://cn.apihz.cn/api/tianqi/tqyb.php?id=88888888&key=88888888&sheng={city1}&place={city2}")
+    data = response.json()
+    weather = data.get("weather1")
+
+    return weather
+
+
+"""以上为ai的工具函数"""
+
+
+
+# 存放所有工具函数
+AI_tools=[AI_get_weather]
+
+
+# 判断ai是否调用工具
+def is_tool_call(response):
+
+    # 判断开头结尾是否为{}
+    if response.strip().startswith('{') and response.strip().endswith('}'):
+
+        # 尝试解析为JSON
+        try:
+            data = json.loads(response)
+
+            # 检查是否呼叫工具
+            if data["tool_call"]:
+
+                # 保存调用参数
+                d1 = data.get("parameters")
+
+                return (True,d1)
+
+                
+        except:
+            # 解析失败
+            return (False,"")
+
+    return (False,"")
+        
+
 
 
 # 获取当前时间
@@ -20,8 +89,38 @@ def Get_time():
 
     return time
 
+
 # 调用大模型
 def llm(time,message):
+
+    # 定义系统角色
+    prompt = actor
+
+
+    # 添加工具描述
+    for i in AI_tools:
+
+        tool_txt = "你可以使用以下工具以完成用户的需求(一次仅可请求一个工具):\n"
+
+        # hasattr() 检查是否含is_tool属性
+        if hasattr(i,"is_tool"):
+
+            # 添加工具描述文本 - 函数名 ： 函数说明
+            tool_txt += f"- {i.__name__} ： {i.__doc__}\n"   # doc:函数的文档字符串（docstring）
+
+
+    use_tool = """
+    \n如果你需要使用工具，请按照以下json格式回复(不输出其他内容)：
+    {"tool_call": "true","tool_name": "<工具函数名>","parameters": {"<参数1>": "<值1>","<参数2>": "<值2>"}}
+
+    否则直接给出回答即可。
+    注意：json格式需要使用双引号\n
+    """
+
+    prompt = actor + tool_txt + use_tool
+
+    message[0]["content"] = prompt
+
 
 
     # 调用推理接口
@@ -29,36 +128,12 @@ def llm(time,message):
         model = "deepseek-chat",
         messages = message, # 传入对话消息列表
         temperature = 1, # 控制回答的随机性，值越高越随机
-        stream = True  # 流式传输
+        stream = False  # 流式传输
     )
 
 
-    # 定义完整回答函数
-    response_stream = ""
 
-
-    # 流式输出
-    # end= "" ：不换行，flush=True：强制刷新输出缓冲区，确保文字立即显示在屏幕上
-    print("小时:",end= "", flush=True)
-
-
-    # 逐块处理响应
-    for chunk in response:  
-
-        # 检查是否有新的内容
-        if chunk.choices[0].delta.content is not None:
-
-            # 打印文本
-            print(chunk.choices[0].delta.content, end="", flush=True)
-
-            # 拼接回答
-            response_stream += chunk.choices[0].delta.content
-
-
-    # 输出结束后换行
-    print("\n")
-
-    return response_stream
+    return response.choices[0].message.content.strip()
 
 
     
@@ -188,6 +263,8 @@ if __name__ == "__main__":
                 # 激活初始对话
                 response = llm(time=time,message=message)
 
+                
+
 
                 # 添加回答到消息列表中
                 message.append({"role": "assistant", "content": response})
@@ -200,7 +277,7 @@ if __name__ == "__main__":
            # 激活初始对话
            response = llm(time=time,message=message)
 
-           tts_stream(response,voice_id=voiceid)
+           
 
 
            # 添加回答到消息列表中
@@ -210,6 +287,7 @@ if __name__ == "__main__":
     
     while True:
         user_input = input("你:")
+
 
         # 退出逻辑
         if user_input.lower() == "退出":
@@ -292,10 +370,39 @@ if __name__ == "__main__":
 
         try:
 
-            # 传入相关记录,获取AI回复
-            response = llm(time=time,message=message)
+            while True:
+                # 传入相关记录,获取AI回复
+                response = llm(time=time,message=message)
 
-            tts_stream(response,voice_id=voiceid)
+                # 判断是否调用工具
+                iscall = is_tool_call(response)
+
+                
+                # 判断是否调用工具
+                if (iscall[1] == ""):
+                    print(f"小时:{response}\n")
+
+                    # 未调用工具，跳出循环
+                    break
+
+                # 调用了工具
+                else:
+                    for i in AI_tools:
+
+                        # 找到对应工具
+                        if json.loads(response)["tool_name"] == i.__name__:
+
+                            # 调用工具
+                            rs = i(**iscall[1])
+
+
+                    # 调用了工具，继续调用大模型
+                    res = f"工具：已成功调用工具,返回结果如下：\n" + rs + "\n请根据返回结果，继续和主人自然的交流。如需要使用工具可再次调用。"
+                    
+                    # 返回结果给ai
+                    message.append({"role": "user", "content": res})
+
+
 
 
             # 添加回答到消息列表中
