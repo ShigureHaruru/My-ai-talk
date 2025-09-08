@@ -1,5 +1,4 @@
-import re
-from types import NoneType
+import AI_tools
 import openai
 import json
 import datetime
@@ -8,13 +7,11 @@ import requests
 
 # 导入向量数据库函数
 from AI_talk import tts
-from tools_db import add_history,get_history,is_important
+from tools_db import add_history , get_history , is_important
 
 # 导入tts函数
 from tts2 import tts_stream
 
-# 导入类型提示
-from typing import List, Dict, Callable, Any
 
 
 
@@ -22,37 +19,16 @@ from typing import List, Dict, Callable, Any
 voiceid = "cosyvoice-v2-v-b51f4f711649476dbbff40753fb5c03c"
 
 
-# 创建装饰器
-def tool(func:Callable) -> Callable:
-
-    # 定义了一个名为 tool 的函数，它接受一个可调用对象（函数）作为参数，并返回一个可调用对象。
-
-    # 添加istool属性，表示这是一个可用的工具函数
-    func.is_tool = True
-    
-    return func
-
-
-
-"""以下为ai的工具函数"""
-
-@tool
-def AI_get_weather(city1 : str, city2 : str) -> str:
-    """获取指定城市的天气信息。参数： city1：省份名，city2：城市名"""
-
-    response = requests.get(url=f"https://cn.apihz.cn/api/tianqi/tqyb.php?id=88888888&key=88888888&sheng={city1}&place={city2}")
-    data = response.json()
-    weather = data.get("weather1")
-
-    return weather
-
-
-"""以上为ai的工具函数"""
-
 
 
 # 存放所有工具函数
-AI_tools=[AI_get_weather]
+AI_tools=[
+
+    AI_tools.AI_get_weather, # 获取天气
+
+    AI_tools.AI_email_send # 发送邮件
+
+    ]
 
 
 # 判断ai是否调用工具
