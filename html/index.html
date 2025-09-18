@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI对话系统 - Live2D交互界面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            height: 80vh;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 对话区域样式 */
+        .chat-section {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e0e0e0;
+            background: #fafafa;
+        }
+        
+        .chat-header {
+            padding: 20px;
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            animation: fadeIn 0.3s ease;
+            line-height: 1.5;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: #6e8efb;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: #e8ebf7;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+        }
+        
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px 20px;
+            background: #6e8efb;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .chat-input button:hover {
+            background: #5a7de4;
+        }
+        
+        /* Live2D区域样式 */
+        .live2d-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            background: #f0f2f5;
+        }
+        
+        .live2d-header {
+            padding: 20px;
+            background: linear-gradient(to right, #a777e3, #6e8efb);
+            color: white;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .live2d-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        #live2d-canvas {
+            width: 80%;
+            height: 80%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .live2d-controls {
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .live2d-controls button {
+            margin: 0 5px;
+            padding: 8px 15px;
+            background: #a777e3;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .live2d-controls button:hover {
+            background: #9266d6;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .chat-section {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .live2d-container {
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- 左侧对话区域 -->
+        <div class="chat-section">
+
+            <div class="chat-header">
+                AI对话助手
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+
+                <div class="message ai-message">
+
+                    <div>您好！我是AI助手，很高兴为您服务。请问有什么我可以帮助您的？</div>
+
+                    <div class="message-time">none</div>
+
+                </div>
+
+            </div>
+
+            <div class="chat-input">
+
+                <input type="text" id="user-input" placeholder="输入您的问题..." autocomplete="off">
+
+                <button id="send-btn">发送</button>
+
+            </div>
+
+        </div>
+        
+        <!-- 右侧Live2D区域 -->
+        <div class="live2d-section">
+            <div class="live2d-header">
+                Live2D交互模型
+            </div>
+            <div class="live2d-container">
+                <canvas id="live2d-canvas" width="300" height="400"></canvas>
+            </div>
+            <div class="live2d-controls">
+                <button id="change-model">更换模型</button>
+                <button id="change-expression">更换表情</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 对话功能实现
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // 获取DOM元素
+            const chatMessages = document.getElementById('chat-messages');
+
+            const userInput = document.getElementById('user-input');
+
+            const sendBtn = document.getElementById('send-btn');
+
+            // 发送消息函数
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (message === '') return;
+
+                // 添加用户消息
+                addMessage(message, 'user' , "none");
+                userInput.value = '';
+
+                // 调用AI回复函数
+                // 使用Fetch API发送POST请求到后端
+                // await 异步操作
+                const response = await fetch("/api/llm", {
+
+                    // post方式发送请求
+                    method: "POST",
+
+
+                    headers: {
+
+                        // 指定请求内容类型为JSON
+                        "Content-Type": 'application/json'
+
+                    },
+
+                    // 将javascript对象转为json字符串
+                    body: JSON.stringify({
+
+                        // api请求参数
+                        u_input: message
+
+                    })
+
+                })
+
+                // 如果请求失败，解析错误信息
+                if (!response.ok) {
+
+                    const e = await response.json();
+                    alert("请求失败：" + e);
+
+                }
+
+                // 如果请求成功，解析响应数据
+                const data = await response.json();
+
+                responseText = data.response;
+
+                time = data.time;
+
+                addMessage(responseText, 'ai' , time);
+
+
+            }
+
+            // 添加消息到聊天窗口
+            function addMessage(text, sender, time) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.classList.add(sender + '-message');
+
+                const messageContent = document.createElement('div');
+                messageContent.textContent = text;
+
+                const messageTime = document.createElement('div');
+                messageTime.classList.add('message-time');
+                messageTime.textContent = time;
+
+                messageDiv.appendChild(messageContent);
+                messageDiv.appendChild(messageTime);
+
+                chatMessages.appendChild(messageDiv);
+
+                // 滚动到底部
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // 事件监听
+            sendBtn.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            // Live2D 交互逻辑（伪代码）
+            /*
+            实际Live2D集成需要引入Live2D SDK和模型文件，例如：
+
+            // 加载Live2D框架
+            import { Live2DModel } from 'live2d-display';
+
+            // 初始化模型
+            const model = await Live2DModel.from('model/hiyori.model.json');
+
+            // 将模型添加到canvas
+            document.getElementById('live2d-canvas').appendChild(model);
+
+            // 处理交互
+            document.getElementById('change-model').addEventListener('click', () => {
+                // 切换模型逻辑
+            });
+
+            document.getElementById('change-expression').addEventListener('click', () => {
+                // 切换表情逻辑
+            });
+            */
+
+            // 由于Live2D需要额外的库和模型文件，这里仅提供伪代码
+            console.log('Live2D功能需要引入额外的库和模型文件');
+        });
+    </script>
+</body>
+</html>

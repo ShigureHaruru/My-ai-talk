@@ -4,7 +4,8 @@ import openai
 
 import json
 
-
+# 获取key
+from key import ali_key
 
 
 
@@ -16,7 +17,7 @@ def embedding(text):
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",  
 
         # api key
-        api_key = "sk-83ea3498d37a491da1959c34fbd647fd"
+        api_key = ali_key
     )
 
     # 调用文本转向量模型

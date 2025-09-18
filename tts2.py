@@ -6,8 +6,11 @@ import pyaudio
 import threading
 from dashscope.audio.tts_v2 import SpeechSynthesizer, ResultCallback, AudioFormat
 
+# 导入key
+from key import ali_key
+
 # 确保已设置你的 API Key
-dashscope.api_key = "sk-83ea3498d37a491da1959c34fbd647fd"  # 建议改为从环境变量读取
+dashscope.api_key = ali_key  
 
 class TTSStreamCallback(ResultCallback):
     """处理流式音频数据的回调类"""

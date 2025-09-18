@@ -11,7 +11,8 @@ import time
 
 from playsound import playsound
 
-
+# 获取key
+from key import ali_key 
 
 
 
@@ -20,7 +21,7 @@ service = VoiceEnrollmentService()
 
 # 调用create_voice方法复刻声音，并生成voice_id
 
-dashscope.api_key = "sk-83ea3498d37a491da1959c34fbd647fd"
+dashscope.api_key = ali_key
 
 
 # 复刻声音，返回voice_id   

@@ -14,24 +14,8 @@ from typing import List, Dict, Callable, Any
 
 
 
-# 创建装饰器
-def tool(func:Callable) -> Callable:
-
-    # 定义了一个名为 tool 的函数，它接受一个可调用对象（函数）作为参数，并返回一个可调用对象。
-
-    # 添加istool属性，表示这是一个可用的工具函数
-    func.is_tool = True
-    
-    return func
-
-
-
-
-
 
 """以下为ai的工具函数"""
-
-@tool
 def AI_get_weather(city1 : str, city2 : str) -> str:
     """获取指定城市的天气信息。参数： city1：省份名，city2：城市名"""
 
@@ -42,7 +26,7 @@ def AI_get_weather(city1 : str, city2 : str) -> str:
     return weather
 
 
-@tool
+
 def AI_email_send(send_list : List[str] , main_text : str , title : str) -> str:
     """发送邮件的工具函数。
     参数: 
