@@ -2,12 +2,20 @@
 
 
 # 导入向量数据库
+
+
+
 import chromadb
 
 from chromadb.config import Settings
+import openai
 
 # 导入文本转换向量函数
 from text_embedding import embedding 
+
+from key import *
+
+import json
 
 
 
@@ -81,7 +89,7 @@ def get_history(query,n_results = 5):
 
 
 
-def is_important(user_input,ai_output):
+async def is_important(user_input,ai_output):
 
     # 用户输入包含以下关键词则视为重要
     important_keywords = [
@@ -110,6 +118,56 @@ def is_important(user_input,ai_output):
 
 
         # 检查AI回答中是否包含任何重要关键词
+
+
+def is_important2(user, ai):
+    prompt = """你必须只输出JSON格式，不要有任何其他文字。
+
+输出格式必须是：
+{"save": true或false, "memory": "记忆内容", "reason": "理由"}
+
+判断规则：
+- 如果是个人偏好、重要事实、情感经历、未来计划，save=true
+- 如果是日常闲聊、短暂状态、模糊信息，save=false
+
+对话内容：
+用户: {user}
+AI: {ai}
+"""
+
+    client = openai.OpenAI(
+        api_key=key,
+        base_url=llm_url
+    )
+
+    list1 = [
+        {"role": "system", "content": prompt},
+        {"role": "user", "content": f"用户: {user}\nAI: {ai}"}
+    ]
+
+    try:
+        res = client.chat.completions.create(
+            model=llm_model,
+            messages=list1,
+            stream=False,
+            temperature=0.1  # 降低随机性，确保稳定输出
+        )
+        
+        response = res.choices[0].message.content.strip()
+        print(f"模型响应: {response}")
+        
+        # 直接解析
+        data = json.loads(response)
+
+        return data.get("save")
+        
+    except json.JSONDecodeError:
+        print(f"JSON解析失败，响应内容: {response}")
+       
+        return False
+    except Exception as e:
+        print(f"错误: {e}")
+        return False
         
     
 

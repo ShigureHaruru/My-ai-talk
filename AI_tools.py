@@ -12,18 +12,27 @@ from email.header import Header
 # 导入类型提示
 from typing import List, Dict, Callable, Any
 
-
+# 时间事件表
+time_list = {
+    
+}
 
 
 """以下为ai的工具函数"""
 def AI_get_weather(city1 : str, city2 : str) -> str:
     """获取指定城市的天气信息。参数： city1：省份名，city2：城市名"""
 
-    response = requests.get(url=f"https://cn.apihz.cn/api/tianqi/tqyb.php?id=88888888&key=88888888&sheng={city1}&place={city2}")
-    data = response.json()
-    weather = data.get("weather1")
+    try:
+        response = requests.get(url=f"https://cn.apihz.cn/api/tianqi/tqyb.php?id=88888888&key=88888888&sheng={city1}&place={city2}")
+        data = response.json()
+        weather = data.get("weather1")
+        return weather
 
-    return weather
+    except:
+        return "调用功能当前不可用"
+    
+
+    
 
 
 
@@ -78,4 +87,22 @@ def AI_email_send(send_list : List[str] , main_text : str , title : str) -> str:
         return f"Error: 无法发送邮件。错误信息：{e}"
 
 
+
+def AI_add_things(time : str ,things : str ) -> str:
+    """添加待办事项的函数
+    参数：
+    time: 待办事项的时间（例:2025-10-05 18:19）
+    things: 待办事项的内容（例:提醒用户上班、帮用户发送邮件给xxx，内容：xxx）
+    """
+    time_list[time] = things
+
+    print(f"已添加待办事项：{time} - {things}")
+
+    return f"已添加待办事项：{time} - {things}"
+
+
 """以上为ai的工具函数"""
+
+
+def things_del(time):
+    del time_list[str(time)]

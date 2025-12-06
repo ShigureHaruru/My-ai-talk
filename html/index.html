@@ -230,7 +230,7 @@
             </div>
 
         </div>
-        
+
         <!-- 右侧Live2D区域 -->
         <div class="live2d-section">
             <div class="live2d-header">
@@ -246,6 +246,9 @@
         </div>
     </div>
 
+    
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    
     <script>
         // 对话功能实现
         document.addEventListener('DOMContentLoaded', function () {
@@ -257,13 +260,80 @@
 
             const sendBtn = document.getElementById('send-btn');
 
+
+            // 初始化 Socket.IO 连接
+            const socket = io('http://localhost:10001', {
+                transports: ['websocket', 'polling']
+            });
+
+            console.log('开始建立 Socket.IO 连接...');
+
+            // 连接成功
+            socket.on('connect', function () {
+                console.log('✅ Socket.IO 连接成功!');
+                console.log('连接ID:', socket.id);
+                console.log('连接状态:', socket.connected);
+
+                addMessage('已连接到服务器', 'system', new Date().toLocaleTimeString());
+
+                // 发送测试消息
+                socket.emit('test_connection', {
+                    message: '前端连接测试',
+                    timestamp: new Date().toISOString()
+                });
+            });
+
+            // 连接断开
+            socket.on('disconnect', function (reason) {
+                console.log('❌ Socket.IO 连接断开，原因:', reason);
+                console.log('连接状态:', socket.connected);
+
+                addMessage('服务器连接已断开: ' + reason, 'system', new Date().toLocaleTimeString());
+            });
+
+            // 连接错误
+            socket.on('connect_error', function (error) {
+                console.error('💥 Socket.IO 连接错误:', error);
+                console.log('连接状态:', socket.connected);
+
+                addMessage('连接服务器失败: ' + error.message, 'error', new Date().toLocaleTimeString());
+            });
+
+            // 重连尝试
+            socket.on('reconnect_attempt', function (attemptNumber) {
+                console.log(`🔄 第 ${attemptNumber} 次重连尝试...`);
+            });
+
+            // 重连成功
+            socket.on('reconnect', function (attemptNumber) {
+                console.log(`✅ 第 ${attemptNumber} 次重连成功`);
+            });
+
+            // 测试连接响应
+            socket.on('test_response', function (data) {
+                console.log('✅ 收到服务器测试响应:', data);
+                addMessage('服务器连接测试成功', 'system', new Date().toLocaleTimeString());
+            });
+
+            // 监听服务器主动发送的消息
+            socket.on('server_message', function (data) {
+                console.log('📨 收到服务器消息:', data);
+                addMessage(data.message, 'ai', data.time);
+            });
+
+            // 保存 socket 到全局变量，方便在控制台调试
+            window.socket = socket;
+
+
+
+
             // 发送消息函数
             async function sendMessage() {
                 const message = userInput.value.trim();
                 if (message === '') return;
 
                 // 添加用户消息
-                addMessage(message, 'user' , "none");
+                addMessage(message, 'user', time);
                 userInput.value = '';
 
                 // 调用AI回复函数
@@ -305,9 +375,9 @@
 
                 responseText = data.response;
 
-                time = data.time;
+                var time = data.time;
 
-                addMessage(responseText, 'ai' , time);
+                addMessage(responseText, 'ai', time);
 
 
             }

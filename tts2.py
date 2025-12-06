@@ -7,9 +7,9 @@ import threading
 from dashscope.audio.tts_v2 import SpeechSynthesizer, ResultCallback, AudioFormat
 
 # 导入key
-from key import ali_key
+from key import *
 
-# 确保已设置你的 API Key
+# API Key
 dashscope.api_key = ali_key  
 
 class TTSStreamCallback(ResultCallback):
@@ -19,11 +19,11 @@ class TTSStreamCallback(ResultCallback):
         self.audio_queue = []  # 用于存储音频数据块的队列
         self.completion_event = threading.Event()
         self._player = pyaudio.PyAudio()
-        # 根据你选择的音频格式打开输出流，CosyVoice-v2 流式通常使用 PCM
+        # 根据选择的音频格式打开输出流，CosyVoice-v2
         self._audio_stream = self._player.open(
             format=self._player.get_format_from_width(2),  # 16bit PCM
             channels=1,  # 单声道
-            rate=22050,   # 采样率，需与 AudioFormat 匹配，例如 22050 Hz
+            rate=22050,   # 采样率
             output=True
         )
 
@@ -59,7 +59,7 @@ class TTSStreamCallback(ResultCallback):
         """等待合成完成"""
         self.completion_event.wait()
 
-def tts_stream(text, voice_id):
+def tts_stream(text, voice_id=voiceid):
     """
     使用流式合成并播放语音
     """
@@ -76,9 +76,9 @@ def tts_stream(text, voice_id):
     )
     
     # 开始流式合成
-    client.streaming_call(text)  # 对于长文本，可考虑分多次 streaming_call
+    client.streaming_call(text)  
 
-    # 如果需要结束流式输入，调用 client.streaming_complete()
+    # 结束流式输入，调用 client.streaming_complete()
 
     client.streaming_complete()
     

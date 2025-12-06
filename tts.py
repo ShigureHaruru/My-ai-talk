@@ -4,6 +4,7 @@
 from os import system
 import dashscope
 
+
 # 使用v2版本的tts    
 from dashscope.audio.tts_v2 import VoiceEnrollmentService, SpeechSynthesizer
 
@@ -13,6 +14,8 @@ from playsound import playsound
 
 # 获取key
 from key import ali_key 
+
+from key import *
 
 
 
@@ -51,16 +54,20 @@ def create_voice(file_url,voice_name):
 def tts(text):
     client = SpeechSynthesizer(
         model ="cosyvoice-v2",  # 使用v2模型
-        voice = "cosyvoice-v2-v-b51f4f711649476dbbff40753fb5c03c",  # 使用复刻的音色ID
+        voice = voiceid,  # 使用复刻的音色ID
         speech_rate = 1.1 # 语速调整，1.0为正常语速
     )
 
     response = client.call(text=text)
 
+    
+
     with open("output.mp3", "wb") as f:
         f.write(response)
         
     playsound("output.mp3")
+
+
 
 
 
