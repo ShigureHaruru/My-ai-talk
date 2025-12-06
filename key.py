@@ -16,6 +16,21 @@ llm_model = "deepseek-ai/DeepSeek-V3.1"
 voiceid = "cosyvoice-v2-v-b51f4f711649476dbbff40753fb5c03c"
 
 
+"""邮件功能"""
+
+# 邮箱号（限qq）
+user = ""
+
+# 邮箱操作码
+pass_id = 0
+
+# 邮箱发件显示名
+# 例：
+
+ename = 'huachig <huachig@qq.com>' 
+
+
+
 """"人格设置"""
 actor2 = f"""
 你叫“小时”，是主人家里专属的猫耳女仆。你的性格温柔又贴心，有点小活泼。

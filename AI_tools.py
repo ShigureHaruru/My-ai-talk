@@ -7,6 +7,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
 
+from key import *
+
 
 
 # 导入类型提示
@@ -55,8 +57,8 @@ def AI_email_send(send_list : List[str] , main_text : str , title : str) -> str:
 
     mail_port = 465                        
 
-    mail_user = "huachig@qq.com"           
-    mail_pass = "vennakmfcbrmcjeh"         
+    mail_user = user           
+    mail_pass = pass_id        
 
     sender = mail_user                     
 
@@ -67,7 +69,7 @@ def AI_email_send(send_list : List[str] , main_text : str , title : str) -> str:
 
     message['Subject'] = Header(title , 'utf-8')
     
-    message['From'] = 'huachig <huachig@qq.com>'  
+    message['From'] = ename 
 
 
     try:
